@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
@@ -33,7 +34,7 @@ public class JwtTokenUtil {
                 .setSubject(user.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY*1000))
-                .signWith(Keys.hmacShaKeyFor(secret.getBytes()))
+                .signWith(Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)))
                 .compact();
 
         return token;
@@ -46,7 +47,7 @@ public class JwtTokenUtil {
     }
 
     private <T> T getClaimfromToken(String token, Function<Claims,T> claimResolver) {
-        final Claims claim = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getClass();
+        final Claims claim = Jwts.parser().setSigningKey(getKey()).build().parseClaimsJws(token).getBody();
         return claimResolver.apply(claim);
     }
 
