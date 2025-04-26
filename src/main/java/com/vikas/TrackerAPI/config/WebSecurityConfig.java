@@ -1,6 +1,7 @@
 package com.vikas.TrackerAPI.config;
 
 import com.vikas.TrackerAPI.security.CustomUserDetailsService;
+import com.vikas.TrackerAPI.security.JwtRequestFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,16 +10,21 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 
 @Configuration
 public class WebSecurityConfig {
     @Autowired
     private CustomUserDetailsService userDetailsService;
-
+    @Bean
+    public JwtRequestFilter authenticationJwtFilter() {
+        return new JwtRequestFilter();
+    }
 
     //updateed
     @Bean
@@ -27,7 +33,13 @@ public class WebSecurityConfig {
         http.authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests.requestMatchers("/home","/register").permitAll().anyRequest().authenticated())
 
-                .httpBasic(Customizer.withDefaults());
+                .httpBasic(Customizer.withDefaults()).sessionManagement(
+                        sessionManagement -> sessionManagement.sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS
+                        )
+                );
+            http.addFilterBefore(authenticationJwtFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.httpBasic(Customizer.withDefaults());
         return http.build();
     }
 

@@ -45,9 +45,33 @@ public class JwtTokenUtil {
         return Keys.hmacShaKeyFor(encodedKey);
     }
 
-   /* private <T> T getClaimfromToken(String token, Function<Claims,T> claimResolver) {
+    private <T> T getClaimfromToken(String token, Function<Claims,T> claimResolver) {
         final Claims claim = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getClass();
         return claimResolver.apply(claim);
-    }*/
+    }
 
+    public String getUsernameFromToken(String jwtToken) {
+        return getClaimfromToken(jwtToken,Claims :: getSubject);
+    }
+
+    public Date getIssuedAtFromToken(String jwtToken) {
+        return getClaimfromToken(jwtToken,Claims :: getIssuedAt);
+    }
+    public Date getExpirationFromToken(String jwtToken) {
+        return getClaimfromToken(jwtToken,Claims :: getExpiration);
+    }
+    public String getIdFromToken(String jwtToken) {
+        return getClaimfromToken(jwtToken,Claims :: getId);
+    }
+
+
+    public boolean validateToken(String jwtToken, UserDetails user) {
+        final String username = getUsernameFromToken(jwtToken);
+        return  username.equals(user.getUsername()) && !isTokenExpired(jwtToken);
+    }
+
+    private boolean isTokenExpired(String jwtToken) {
+        final Date expiration = getExpirationFromToken(jwtToken);
+        return expiration.before(new Date());
+    }
 }
