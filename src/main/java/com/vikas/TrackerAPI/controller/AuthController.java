@@ -49,9 +49,9 @@ public class AuthController {
         //User user=	userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
 		/*authenticationManager.authenticate( new UsernamePasswordAuthenticationToken(login.getEmail(), login.getPassword()) );
 		SecurityContextHolder.getContext().setAuthentication( authenticationManager.authenticate());*/
-        authenticate(login.getEmail(),login.getPassword());
-        final UserDetails user = customUserDetailsService.loadUserByUsername(login.getEmail());
 
+        final UserDetails user = customUserDetailsService.loadUserByUsername(login.getEmail());
+        authenticate(login.getEmail(),login.getPassword());
         //SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(user, user.getPassword(), user.getAuthorities()));
         //we need to generate jwt token
         final String token =jwtTokenUtil.generateToken(user);

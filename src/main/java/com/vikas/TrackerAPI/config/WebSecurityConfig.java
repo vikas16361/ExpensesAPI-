@@ -21,6 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class WebSecurityConfig {
     @Autowired
     private CustomUserDetailsService userDetailsService;
+
     @Bean
     public JwtRequestFilter authenticationJwtFilter() {
         return new JwtRequestFilter();
@@ -39,7 +40,6 @@ public class WebSecurityConfig {
                         )
                 );
             http.addFilterBefore(authenticationJwtFilter(), UsernamePasswordAuthenticationFilter.class);
-        http.httpBasic(Customizer.withDefaults());
         return http.build();
     }
 
