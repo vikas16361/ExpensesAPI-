@@ -12,10 +12,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -36,7 +33,8 @@ public class AuthController {
     private UserRepository userRepository;
 
     @Autowired
-    //private AuthenticationManager authenticationManager;
+    private AuthenticationManager authenticationManager;
+    @Autowired
     private CustomUserDetailsService customUserDetailsService;
 
     @Autowired
@@ -47,11 +45,11 @@ public class AuthController {
     @PostMapping("/home")
     public ResponseEntity<JwtResponse> login(@RequestBody LoginModel login) throws Exception {
         //User user=	userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
-		/*authenticationManager.authenticate( new UsernamePasswordAuthenticationToken(login.getEmail(), login.getPassword()) );
-		SecurityContextHolder.getContext().setAuthentication( authenticationManager.authenticate());*/
+		Authentication auth =authenticationManager.authenticate( new UsernamePasswordAuthenticationToken(login.getEmail(), login.getPassword()) );
+		SecurityContextHolder.getContext().setAuthentication(auth);
 
         final UserDetails user = customUserDetailsService.loadUserByUsername(login.getEmail());
-        authenticate(login.getEmail(),login.getPassword());
+        //authenticate(login.getEmail(),login.getPassword());
         //SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(user, user.getPassword(), user.getAuthorities()));
         //we need to generate jwt token
         final String token =jwtTokenUtil.generateToken(user);
@@ -61,7 +59,7 @@ public class AuthController {
 
     private void authenticate(String email, String password) throws Exception {
         try {
-            authenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
         }
         catch (DisabledException e) {
             throw new Exception("user not found");
